@@ -107,7 +107,7 @@ double maxmod (const double& a, const double& b)
 }
 
 //------------------------------------------------------------------------------
-// Compute matrix of eigenvectors = R
+// Compute matrix of right eigenvectors = R
 // and its inverse matrix = Ri
 //------------------------------------------------------------------------------
 void EigMat(double d, double m, double E, double R[][n_var], double Ri[][n_var])
@@ -165,7 +165,7 @@ void Multi(double R[][n_var], std::vector<double>& U)
    }
 }
 //------------------------------------------------------------------------------
-// Exact solution
+// Exact solution for smooth test case
 //------------------------------------------------------------------------------
 template <int dim>
 class ExactSolution : public Function<dim>
@@ -201,10 +201,16 @@ template <int dim>
 class InitialCondition : public Function<dim>
 {
 public:
-   InitialCondition () : Function<dim>() {}
+   InitialCondition (std::string test_case)
+   :
+   Function<dim>(),
+   test_case (test_case)
+   {}
    
    virtual void vector_value (const Point<dim>   &p,
                               Vector<double>& values) const;
+   
+private:
    std::string test_case;
 };
 
@@ -296,8 +302,13 @@ template <int dim>
 class EulerProblem
 {
 public:
-   EulerProblem (unsigned int degree, const ParameterHandler& prm);
-   void run (double& h, int& ndof, double& L2_error, double& H1_error, double& Linf_error);
+   EulerProblem (unsigned int degree,
+                 const ParameterHandler& prm);
+   void run (double& h,
+             int& ndof,
+             double& L2_error,
+             double& H1_error,
+             double& Linf_error);
    
 private:
    void make_grid_and_dofs ();
@@ -724,8 +735,7 @@ void EulerProblem<dim>::initialize ()
    
    std::vector<unsigned int> local_dof_indices (dofs_per_cell);
    
-   InitialCondition<dim> initial_condition;
-   initial_condition.test_case = test_case;
+   InitialCondition<dim> initial_condition (test_case);
    
    Vector<double> initial_value(n_var);
    double initial_density;
